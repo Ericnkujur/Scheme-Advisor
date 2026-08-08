@@ -1,19 +1,13 @@
 """
 Streamlit UI for JanSahayak v1.
 
-Flow: user fills in their profile + a free-text question -> retrieve
-relevant chunks -> for each scheme that shows up, load its structured
-rule (extracted ahead of time via rules/extract_rules.py) and run the
-deterministic evaluator -> pass chunks + verdicts to generation/answer.py
--> display the final answer with sources.
+Flow: chat-based. Each message is parsed for profile info, merged into
+session state, used to retrieve + evaluate schemes, and answered
+conversationally. Missing-field follow-ups render as quick-pick widgets
+instead of requiring the user to type an answer.
 
 Run with:
     streamlit run app.py
-
-Expects:
-- A built Chroma index at data/chroma_db (see retrieval/embed.py)
-- One JSON file per scheme under data/rules/, each containing an
-  EligibilityRule (see rules/extract_rules.py --out ...)
 """
 from __future__ import annotations
 import json
@@ -24,6 +18,7 @@ import streamlit as st
 
 from rules.schema import EligibilityRule, UserProfile, Category, EducationLevel
 from rules.evaluator import evaluate
+from rules.parse_profile import parse_profile
 from retrieval.retrieve import retrieve
 from generation.answer import generate_answer
 
@@ -33,7 +28,7 @@ DB_PATH = "data/chroma_db"
 
 @st.cache_data
 def load_rules() -> dict[str, EligibilityRule]:
-    """scheme_name -> EligibilityRule, loaded from data/rules/*.json"""
+    """scheme_slug -> EligibilityRule, loaded from data/rules/*.json"""
     rules = {}
     if not RULES_DIR.exists():
         return rules
@@ -47,7 +42,7 @@ def load_rules() -> dict[str, EligibilityRule]:
 
 def build_profile_from_sidebar() -> UserProfile:
     st.sidebar.header("Your profile")
-    st.sidebar.caption("Leave anything blank if you're not sure — the assistant will tell you what's missing.")
+    st.sidebar.caption("Optional — the assistant reads your question first. Use this to correct or add details it missed.")
 
     age = st.sidebar.number_input("Age", min_value=0, max_value=100, value=0)
     income = st.sidebar.number_input("Annual family income (₹)", min_value=0, value=0, step=10000)
@@ -72,13 +67,98 @@ def build_profile_from_sidebar() -> UserProfile:
     )
 
 
+def most_unlocking_missing_field(results: list) -> str | None:
+    """Whichever missing field appears across the most schemes — that's the
+    single question worth asking, since answering it unlocks the most verdicts."""
+    from collections import Counter
+    counts = Counter(f for r in results for f in r.missing_fields)
+    return counts.most_common(1)[0][0] if counts else None
+
+
+def render_missing_field_widget(field: str, key_prefix: str) -> bool:
+    """Renders a quick-pick widget for a single missing profile field.
+    Updates st.session_state.profile directly and returns True if it did
+    (caller should st.rerun() when this returns True)."""
+    profile = st.session_state.profile
+
+    if field == "category":
+        st.write("Quick pick — what's your category?")
+        cols = st.columns(4)
+        options = ["General", "OBC", "SC", "ST"]
+        for i, cat in enumerate(options):
+            if cols[i].button(cat, key=f"{key_prefix}_cat_{cat}"):
+                profile.category = Category(cat)
+                return True
+        cols2 = st.columns(2)
+        for i, cat in enumerate(["EWS", "Minority"]):
+            if cols2[i].button(cat, key=f"{key_prefix}_cat_{cat}"):
+                profile.category = Category(cat)
+                return True
+
+    elif field == "annual_family_income":
+        income = st.number_input(
+            "Annual family income (₹)", min_value=0, step=10000, key=f"{key_prefix}_income"
+        )
+        if st.button("Submit income", key=f"{key_prefix}_income_submit"):
+            profile.annual_family_income = income
+            return True
+
+    elif field == "age":
+        age = st.number_input("Your age", min_value=0, max_value=100, key=f"{key_prefix}_age")
+        if st.button("Submit age", key=f"{key_prefix}_age_submit"):
+            profile.age = age
+            return True
+
+    elif field == "domicile_certificate":
+        st.write("Do you have a domicile certificate?")
+        c1, c2 = st.columns(2)
+        if c1.button("Yes", key=f"{key_prefix}_domicile_yes"):
+            profile.has_domicile_certificate = True
+            return True
+        if c2.button("No", key=f"{key_prefix}_domicile_no"):
+            profile.has_domicile_certificate = False
+            return True
+
+    elif field == "disability_certificate":
+        st.write("Do you have a disability certificate?")
+        c1, c2 = st.columns(2)
+        if c1.button("Yes", key=f"{key_prefix}_disability_yes"):
+            profile.has_disability_certificate = True
+            return True
+        if c2.button("No", key=f"{key_prefix}_disability_no"):
+            profile.has_disability_certificate = False
+            return True
+
+    elif field == "minimum_percentage":
+        pct = st.number_input(
+            "Your percentage in the qualifying exam", min_value=0.0, max_value=100.0,
+            step=0.5, key=f"{key_prefix}_pct"
+        )
+        if st.button("Submit percentage", key=f"{key_prefix}_pct_submit"):
+            profile.last_exam_percentage = pct
+            return True
+
+    return False
+
+
+def merge_profiles(parsed: UserProfile, override: UserProfile) -> UserProfile:
+    """Sidebar values win when the user actually set them (non-default);
+    otherwise fall back to what was parsed from the question text."""
+    merged_data = parsed.model_dump()
+    override_data = override.model_dump()
+    for key, value in override_data.items():
+        if value is not None:
+            merged_data[key] = value
+    return UserProfile.model_validate(merged_data)
+
+
 def main():
     st.set_page_config(page_title="JanSahayak", page_icon="🎓")
-    st.title("JanSahayak")
+    st.title("🎓 JanSahayak")
     st.caption("Find government scholarships you may be eligible for — with sources, not guesses.")
 
     if not os.environ.get("GROQ_API_KEY"):
-        st.warning("GROQ_API_KEY is not set — answer generation will fail until it's set in your environment.")
+        st.warning("GROQ_API_KEY is not set — profile parsing and answer generation will fail until it's set in your environment.")
 
     rules_by_scheme = load_rules()
     if not rules_by_scheme:
@@ -88,68 +168,90 @@ def main():
         )
         st.stop()
 
-    profile = build_profile_from_sidebar()
+    if "profile" not in st.session_state:
+        st.session_state.profile = UserProfile()
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
 
-    query = st.text_input(
-        "Ask a question",
-        placeholder="e.g. What scholarships am I eligible for as an OBC student in Haryana?",
-    )
+    sidebar_profile = build_profile_from_sidebar()
     top_k = st.sidebar.slider("Number of results to consider", 1, 10, 5)
 
-    if st.button("Search", type="primary") and query:
-        with st.spinner("Retrieving relevant schemes..."):
+    with st.sidebar.expander("What I know about you so far"):
+        st.json(st.session_state.profile.model_dump(exclude_none=True))
+        if st.button("Reset conversation"):
+            st.session_state.profile = UserProfile()
+            st.session_state.messages = []
+            st.rerun()
+
+    for msg in st.session_state.messages:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
+
+    query = st.chat_input("Ask about scholarships, or answer a follow-up question...")
+
+    if query:
+        st.session_state.messages.append({"role": "user", "content": query})
+        with st.chat_message("user"):
+            st.markdown(query)
+
+        with st.chat_message("assistant"):
+            with st.spinner("Understanding..."):
+                try:
+                    newly_parsed = parse_profile(query)
+                except Exception as e:
+                    st.warning(f"Couldn't parse profile from your message ({e})")
+                    newly_parsed = UserProfile()
+
+            # Accumulate: keep everything already known, fill in new fields, sidebar overrides all
+            st.session_state.profile = merge_profiles(
+                merge_profiles(newly_parsed, st.session_state.profile),
+                sidebar_profile,
+            )
+            profile = st.session_state.profile
+
             try:
                 chunks = retrieve(query, DB_PATH, top_k=top_k)
             except Exception as e:
                 st.error(f"Retrieval failed — has the index been built? ({e})")
                 st.stop()
 
-        if not chunks:
-            st.info("No relevant schemes found for that query.")
-            st.stop()
+            results = []
+            if chunks:
+                seen_slugs = {c.scheme_slug for c in chunks}
+                results = [
+                    evaluate(rules_by_scheme[slug], profile)
+                    for slug in seen_slugs if slug in rules_by_scheme
+                ]
 
-        # Evaluate eligibility for each distinct scheme that showed up in retrieval
-        seen_schemes = {c.scheme_name for c in chunks}
-        results = []
-        for scheme_name in seen_schemes:
-            rule = rules_by_scheme.get(scheme_name)
-            if rule is None:
-                continue  # retrieved chunk belongs to a scheme we haven't extracted rules for yet
-            results.append(evaluate(rule, profile))
+            if not chunks:
+                answer = "I couldn't find any schemes matching that — try rephrasing your question."
+            elif not results:
+                answer = "Found relevant text but no structured rules for these schemes yet."
+            else:
+                try:
+                    answer = generate_answer(query, chunks, results)
+                except Exception as e:
+                    answer = f"Answer generation failed: {e}"
 
-        seen_slugs = {c.scheme_slug for c in chunks}
-        results = []
-        for slug in seen_slugs:
-            rule = rules_by_scheme.get(slug)
-            if rule is None:
-                continue
-            results.append(evaluate(rule, profile))
+            st.markdown(answer)
 
-        if not results:
-            st.warning(
-                "Found relevant text but no structured rules for these schemes yet — "
-                "run extract_rules.py for them first."
-            )
-            st.stop()
+            if chunks and results:
+                field = most_unlocking_missing_field(results)
+                if field:
+                    if render_missing_field_widget(field, key_prefix=f"turn_{len(st.session_state.messages)}"):
+                        st.rerun()
 
-        with st.spinner("Preparing your answer..."):
-            try:
-                answer = generate_answer(query, chunks, results)
-            except Exception as e:
-                st.error(f"Answer generation failed: {e}")
-                st.stop()
+                with st.expander("Raw eligibility verdicts (for debugging)"):
+                    for r in results:
+                        st.text(r.summary())
 
-        st.markdown(answer)
+                with st.expander("Retrieved source passages"):
+                    for c in chunks:
+                        st.markdown(f"**{c.scheme_name}** — `{c.source_document}` (distance: {c.distance:.3f})")
+                        st.text(c.text[:500])
+                        st.divider()
 
-        with st.expander("Raw eligibility verdicts (for debugging)"):
-            for r in results:
-                st.text(r.summary())
-
-        with st.expander("Retrieved source passages"):
-            for c in chunks:
-                st.markdown(f"**{c.scheme_name}** — `{c.source_document}` (distance: {c.distance:.3f})")
-                st.text(c.text[:500])
-                st.divider()
+        st.session_state.messages.append({"role": "assistant", "content": answer})
 
 
 if __name__ == "__main__":

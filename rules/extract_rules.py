@@ -23,7 +23,10 @@ import os
 
 from dotenv import load_dotenv
 from openai import OpenAI
-from schema import EligibilityRule
+try:
+    from schema import EligibilityRule
+except ImportError:
+    from rules.schema import EligibilityRule
 
 load_dotenv()
 
