@@ -1,0 +1,30 @@
+{
+  "scheme_name": "Pre-Matric Scholarship for Students with Disabilities",
+  "state": null,
+  "age": null,
+  "annual_family_income": {
+    "operator": "<=",
+    "value": 250000.0
+  },
+  "eligible_categories": [
+    "Any"
+  ],
+  "education_level": "School",
+  "requires_domicile": false,
+  "requires_disability_certificate": true,
+  "minimum_percentage": null,
+  "required_documents": [
+    "Photograph",
+    "Proof of age",
+    "Disability Certificate",
+    "Income Certificate of the parent",
+    "Tuition fee receipt",
+    "Previous year mark sheet",
+    "Aadhaar Card or Aadhaar enrollment receipt",
+    "Bank passbook or cancelled cheque"
+  ],
+  "source_document": "Pre_Matric_Scholarship_For_Students_With_Disabilities__guideline.pdf",
+  "source_section": "Section 4",
+  "application_url": "https://www.scholarships.gov.in",
+  "last_verified_date": "2026-08-07"
+}

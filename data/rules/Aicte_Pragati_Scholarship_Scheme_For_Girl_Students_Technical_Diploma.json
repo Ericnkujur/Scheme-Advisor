@@ -1,0 +1,31 @@
+{
+  "scheme_name": "AICTE – PRAGATI SCHOLARSHIP SCHEME FOR GIRL STUDENTS (DIPLOMA)",
+  "state": null,
+  "age": null,
+  "annual_family_income": {
+    "operator": "<",
+    "value": 800000.0
+  },
+  "eligible_categories": [
+    "Any"
+  ],
+  "education_level": "Diploma",
+  "requires_domicile": false,
+  "requires_disability_certificate": false,
+  "minimum_percentage": null,
+  "required_documents": [
+    "Copy of SSC/10th certificate & mark sheet",
+    "Copy of HSC/12th certificate (In case of Degree level)& mark sheet",
+    "Copy of ITI certificate (In case of Lateral Entry for Diploma level)& mark sheet",
+    "Copy of Diploma certificate (In case of Lateral Entry for Degree level)& mark sheet",
+    "Category, if applicable",
+    "Study/ Bonafide Certificate",
+    "Annual Family Income Certificate",
+    "Parent Declaration",
+    "Promotion Certificate in case of renewal"
+  ],
+  "source_document": "Aicte_Pragati_Scholarship_Scheme_For_Girl_Students_Technical_Diploma__guideline.pdf",
+  "source_section": null,
+  "application_url": "National Scholarship Portal (NSP)",
+  "last_verified_date": "2026-08-08"
+}

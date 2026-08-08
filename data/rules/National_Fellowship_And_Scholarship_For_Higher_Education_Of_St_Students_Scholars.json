@@ -1,0 +1,28 @@
+{
+  "scheme_name": "National Fellowship and Scholarship for Higher Education of ST Students",
+  "state": null,
+  "age": null,
+  "annual_family_income": {
+    "operator": "<=",
+    "value": 600000.0
+  },
+  "eligible_categories": [
+    "ST"
+  ],
+  "education_level": "Any",
+  "requires_domicile": true,
+  "requires_disability_certificate": false,
+  "minimum_percentage": null,
+  "required_documents": [
+    "ST Certificate/ PVTG Certificate",
+    "Income Certificate",
+    "Fee Receipt",
+    "Scanned copy of the bank passbook",
+    "Mark sheet/Certificate of qualifying examination",
+    "Bonafide Certificate issued from the Institute"
+  ],
+  "source_document": "National_Fellowship_And_Scholarship_For_Higher_Education_Of_St_Students_Scholars__guideline.pdf",
+  "source_section": "PART-B: National Scholarship - 2. Salient Features of the Scheme",
+  "application_url": "https://www.scholarships.gov.in",
+  "last_verified_date": "2026-08-07"
+}

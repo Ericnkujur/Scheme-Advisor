@@ -1,0 +1,30 @@
+{
+  "scheme_name": "AICTE - SAKSHAM SCHOLARSHIP SCHEME FOR SPECIALLY-ABLED STUDENT (DEGREE)",
+  "state": null,
+  "age": null,
+  "annual_family_income": {
+    "operator": "<=",
+    "value": 800000.0
+  },
+  "eligible_categories": [
+    "Any"
+  ],
+  "education_level": "Undergraduate",
+  "requires_domicile": true,
+  "requires_disability_certificate": true,
+  "minimum_percentage": null,
+  "required_documents": [
+    "Copy of SSC/10th certificate & mark sheet",
+    "Copy of HSC/12th certificate (In case of Degree level)& mark sheet",
+    "Copy of ITI certificate (In case of Lateral Entry for Diploma level)& mark sheet",
+    "Copy of Diploma certificate (In case of Lateral Entry for Degree level)& marksheet",
+    "Category, if applicable",
+    "Study/ Bonafide Certificate",
+    "Annual Family Income Certificate",
+    "Promotion Certificate in case of renewal"
+  ],
+  "source_document": "Aicte_Saksham_Scholarship_Scheme_For_Specially_Abled_Student_Technical_Degree__guideline.pdf",
+  "source_section": null,
+  "application_url": "https://scholarships.gov.in/",
+  "last_verified_date": "2026-08-08"
+}

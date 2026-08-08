@@ -1,0 +1,26 @@
+{
+  "scheme_name": "Prime Minister’s Scholarship Scheme (PMSS)",
+  "state": null,
+  "age": null,
+  "annual_family_income": null,
+  "eligible_categories": [
+    "Any"
+  ],
+  "education_level": "Undergraduate",
+  "requires_domicile": false,
+  "requires_disability_certificate": false,
+  "minimum_percentage": {
+    "operator": ">=",
+    "value": 60.0
+  },
+  "required_documents": [
+    "Service certificate (Annexure-A) for serving personnel",
+    "PPO/Discharge/Death/Disability/Gallantry award certificate (as applicable)",
+    "Bonafide certificate from institution",
+    "Self-attested MEQ mark sheet"
+  ],
+  "source_document": "Prime_Minister_s_Scholarship_Scheme_For_CAPF_And_Assam_Rifles__guideline.pdf",
+  "source_section": null,
+  "application_url": "https://www.scholarship.gov.in",
+  "last_verified_date": "2026-08-08"
+}

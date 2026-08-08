@@ -1,0 +1,25 @@
+{
+  "scheme_name": "Prime Minister’s Scholarship Scheme",
+  "state": null,
+  "age": null,
+  "annual_family_income": null,
+  "eligible_categories": [
+    "Any"
+  ],
+  "education_level": "Undergraduate",
+  "requires_domicile": false,
+  "requires_disability_certificate": false,
+  "minimum_percentage": {
+    "operator": ">=",
+    "value": 60.0
+  },
+  "required_documents": [
+    "Service Certificate",
+    "PPO/Discharge certificate/book",
+    "Mark-sheet/Grade card of MEQ"
+  ],
+  "source_document": "Prime_Minister_s_Scholarship_Scheme_For_Ministry_Of_Railways__guideline.pdf",
+  "source_section": null,
+  "application_url": "http://www.scholarships.gov.in",
+  "last_verified_date": "2026-08-08"
+}

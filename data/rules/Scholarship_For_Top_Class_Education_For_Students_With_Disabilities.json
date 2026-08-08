@@ -1,0 +1,31 @@
+{
+  "scheme_name": "Top Class Education Scholarship for Students with Disabilities",
+  "state": null,
+  "age": null,
+  "annual_family_income": {
+    "operator": "<=",
+    "value": 800000.0
+  },
+  "eligible_categories": [
+    "Any"
+  ],
+  "education_level": "Any",
+  "requires_domicile": false,
+  "requires_disability_certificate": true,
+  "minimum_percentage": null,
+  "required_documents": [
+    "Photograph",
+    "Proof of age",
+    "Disability Certificate",
+    "Income Certificate of parent/guardian",
+    "Tuition fee receipt",
+    "Previous year mark sheet / Last academic qualification certificate",
+    "Aadhaar Card or Aadhaar Enrollment slip",
+    "Bank passbook or cancelled cheque leaf",
+    "Receipt/Bill for purchase of Laptop/Computer and Aids & Assistive devices"
+  ],
+  "source_document": "Scholarship_For_Top_Class_Education_For_Students_With_Disabilities__guideline.pdf",
+  "source_section": "Section 6: Top Class Education Scholarship for Student with Benchmark Disabilities",
+  "application_url": "https://www.scholarships.gov.in",
+  "last_verified_date": "2026-08-07"
+}

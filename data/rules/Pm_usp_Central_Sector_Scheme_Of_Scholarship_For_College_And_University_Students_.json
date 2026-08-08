@@ -1,0 +1,32 @@
+{
+  "scheme_name": "Pradhan Mantri Uchchatar Shiksha Protsahan (PM-USP) Yojana Central Sector Scheme of Scholarship for College and University Students",
+  "state": null,
+  "age": null,
+  "annual_family_income": {
+    "operator": "<=",
+    "value": 450000.0
+  },
+  "eligible_categories": [
+    "General",
+    "OBC",
+    "SC",
+    "ST"
+  ],
+  "education_level": "Undergraduate",
+  "requires_domicile": false,
+  "requires_disability_certificate": false,
+  "minimum_percentage": {
+    "operator": ">",
+    "value": 80.0
+  },
+  "required_documents": [
+    "12th Mark Sheet",
+    "Family Income Certificate",
+    "Category/ caste Certification",
+    "Disability Certificate"
+  ],
+  "source_document": "Pm_usp_Central_Sector_Scheme_Of_Scholarship_For_College_And_University_Students___guideline.pdf",
+  "source_section": null,
+  "application_url": "http://scholarships.gov.in/",
+  "last_verified_date": "2026-08-08"
+}

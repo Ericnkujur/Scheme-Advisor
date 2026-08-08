@@ -23,7 +23,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 
-from schema import EligibilityRule, UserProfile, NumericCondition, Operator, Category
+from rules.schema import EligibilityRule, UserProfile, NumericCondition, Operator, Category
 
 
 class ConditionStatus(str, Enum):

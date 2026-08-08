@@ -1,0 +1,27 @@
+{
+  "scheme_name": "AICTE – SWANATH SCHOLARSHIP SCHEME",
+  "state": null,
+  "age": null,
+  "annual_family_income": {
+    "operator": "<=",
+    "value": 800000.0
+  },
+  "eligible_categories": [
+    "Any"
+  ],
+  "education_level": "Any",
+  "requires_domicile": false,
+  "requires_disability_certificate": false,
+  "minimum_percentage": null,
+  "required_documents": [
+    "Death Certificates of both Father & Mother (if available) OR A certificate issued by Tehsildar / S D M",
+    "Bonafide Certificate issued by the institution",
+    "10+2 / equivalent and 10th Mark sheet for Degree Level",
+    "10th /equivalent Mark sheet for Diploma Level",
+    "Category Certificate (SC/ST/OBC-NCL)"
+  ],
+  "source_document": "Aicte_Swanath_Scholarship_Scheme_Technical_Diploma__guideline.pdf",
+  "source_section": null,
+  "application_url": "National Scholarship Portal (NSP)",
+  "last_verified_date": "2026-08-08"
+}

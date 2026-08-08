@@ -1,0 +1,27 @@
+{
+  "scheme_name": "Financial Assistance for Education to the Wards of Beedi/Cine/IOMC/LSDM Workers",
+  "state": null,
+  "age": null,
+  "annual_family_income": {
+    "operator": "<=",
+    "value": 10000.0
+  },
+  "eligible_categories": [
+    "Any"
+  ],
+  "education_level": "Any",
+  "requires_domicile": false,
+  "requires_disability_certificate": false,
+  "minimum_percentage": null,
+  "required_documents": [
+    "Photo",
+    "Copy of the Identity card of the worker",
+    "Copy of front page of Bank Pass Book or Cancelled Cheque",
+    "Passing Certificate/Mark Sheet of previous Academic Year",
+    "Income Certificate issued by the Revenue Authority"
+  ],
+  "source_document": "Financial_Assistance_For_Education_To_The_Wards_Of_Beedi_cine_iomc_lsdm_Pre_Matr__guideline.pdf",
+  "source_section": null,
+  "application_url": "https://scholarships.gov.in",
+  "last_verified_date": "2026-08-08"
+}

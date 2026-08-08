@@ -1,0 +1,29 @@
+{
+  "scheme_name": "Post-Matric Scholarship for Students with Disabilities",
+  "state": null,
+  "age": null,
+  "annual_family_income": {
+    "operator": "<=",
+    "value": 250000.0
+  },
+  "eligible_categories": [
+    "Any"
+  ],
+  "education_level": "Any",
+  "requires_domicile": false,
+  "requires_disability_certificate": true,
+  "minimum_percentage": null,
+  "required_documents": [
+    "Student photograph",
+    "Disability certificate",
+    "Parental income certificate",
+    "Tuition fee receipt",
+    "Previous year mark sheet",
+    "Aadhaar Card",
+    "Bank passbook or cancelled cheque"
+  ],
+  "source_document": "Post_Matric_Scholarship_For_Students_With_Disabilities__guideline.pdf",
+  "source_section": "Section 5: POST-MATRIC SCHOLARSHIP FOR STUDENT WITH BENCHMARK DISABILITIES",
+  "application_url": "https://www.scholarships.gov.in",
+  "last_verified_date": "2026-08-07"
+}

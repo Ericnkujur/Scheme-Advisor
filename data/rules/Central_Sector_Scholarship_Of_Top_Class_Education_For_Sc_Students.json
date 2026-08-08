@@ -1,0 +1,28 @@
+{
+  "scheme_name": "Scheme of Top Class Scholarship for SC Students",
+  "state": null,
+  "age": null,
+  "annual_family_income": {
+    "operator": "<=",
+    "value": 800000.0
+  },
+  "eligible_categories": [
+    "SC"
+  ],
+  "education_level": "Any",
+  "requires_domicile": false,
+  "requires_disability_certificate": false,
+  "minimum_percentage": null,
+  "required_documents": [
+    "Caste Certificate",
+    "Income Certificate",
+    "Aadhaar Card",
+    "Aadhaar-seeded Bank Account Details",
+    "Admission Rank and Fee details",
+    "Affidavit certifying non-third sibling status"
+  ],
+  "source_document": "Central_Sector_Scholarship_Of_Top_Class_Education_For_Sc_Students__guideline.pdf",
+  "source_section": "2 Eligibility",
+  "application_url": null,
+  "last_verified_date": "2026-08-07"
+}

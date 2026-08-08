@@ -42,6 +42,7 @@ class EducationLevel(str, Enum):
     UNDERGRADUATE = "Undergraduate"
     POSTGRADUATE = "Postgraduate"
     PHD = "PhD"
+    DIPLOMA = "Diploma"
     ANY = "Any"
 
 
