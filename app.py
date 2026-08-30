@@ -4,7 +4,9 @@ Streamlit UI for JanSahayak v1.
 Flow: chat-based. Each message is parsed for profile info, merged into
 session state, used to retrieve + evaluate schemes, and answered
 conversationally. Missing-field follow-ups render as quick-pick widgets
-instead of requiring the user to type an answer.
+instead of requiring the user to type an answer — but only when retrieval
+actually found something relevant (gated by RELEVANCE_CUTOFF), so the
+widget doesn't show up alongside a "nothing matches" answer.
 
 Run with:
     streamlit run app.py
@@ -24,6 +26,7 @@ from generation.answer import generate_answer
 
 RULES_DIR = Path("data/rules")
 DB_PATH = "data/chroma_db"
+RELEVANCE_CUTOFF = 0.60  # tuned from real distance data on this corpus
 
 
 @st.cache_data
@@ -74,6 +77,15 @@ def top_missing_fields(results: list, n: int = 2) -> list[str]:
     from collections import Counter
     counts = Counter(f for r in results for f in r.missing_fields)
     return [f for f, _ in counts.most_common(n)]
+
+
+def is_relevant(chunks: list) -> bool:
+    """True only when retrieval's best match is close enough to trust —
+    keeps the follow-up widget from appearing next to a 'nothing matches'
+    answer (e.g. an out-of-scope query like 'study abroad')."""
+    if not chunks:
+        return False
+    return min(c.distance for c in chunks) <= RELEVANCE_CUTOFF
 
 
 def render_missing_field_widget(field: str, key_prefix: str) -> bool:
@@ -173,6 +185,8 @@ def main():
         st.session_state.profile = UserProfile()
     if "messages" not in st.session_state:
         st.session_state.messages = []
+    if "pending_fields" not in st.session_state:
+        st.session_state.pending_fields = []
 
     sidebar_profile = build_profile_from_sidebar()
     top_k = st.sidebar.slider("Number of results to consider", 1, 10, 5)
@@ -182,6 +196,7 @@ def main():
         if st.button("Reset conversation"):
             st.session_state.profile = UserProfile()
             st.session_state.messages = []
+            st.session_state.pending_fields = []
             st.rerun()
 
     for msg in st.session_state.messages:
@@ -190,7 +205,6 @@ def main():
 
     query = st.chat_input("Ask about scholarships, or answer a follow-up question...")
 
-    
     if query and (
         not st.session_state.messages
         or st.session_state.messages[-1].get("content") != query
@@ -241,11 +255,13 @@ def main():
 
             st.markdown(answer)
 
-            if chunks and results:
-                fields = top_missing_fields(results, n=2)
-                st.session_state.pending_fields = fields
-                st.session_state.last_query = query
+            if chunks and results and is_relevant(chunks):
+                st.session_state.pending_fields = top_missing_fields(results, n=2)
+            else:
+                st.session_state.pending_fields = []
+            st.session_state.last_query = query
 
+            if chunks and results:
                 with st.expander("Raw eligibility verdicts (for debugging)"):
                     for r in results:
                         st.text(r.summary())
@@ -257,6 +273,7 @@ def main():
                         st.divider()
 
         st.session_state.messages.append({"role": "assistant", "content": answer})
+
     if st.session_state.get("pending_fields"):
         with st.container(border=True):
             st.markdown("**📋 A couple more details could unlock more schemes:**")
@@ -281,11 +298,15 @@ def main():
                         for slug in seen_slugs if slug in rules_by_scheme
                     ]
                     answer = generate_answer(requery, chunks, results) if results else "No matching schemes."
-                    st.session_state.pending_fields = top_missing_fields(results, n=2) if results else []
+                    if results and is_relevant(chunks):
+                        st.session_state.pending_fields = top_missing_fields(results, n=2)
+                    else:
+                        st.session_state.pending_fields = []
                 except Exception as e:
                     answer = f"Error: {e}"
                 st.session_state.messages.append({"role": "assistant", "content": answer})
                 st.rerun()
+
 
 if __name__ == "__main__":
     main()

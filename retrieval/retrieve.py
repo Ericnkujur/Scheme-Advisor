@@ -14,7 +14,10 @@ from dataclasses import dataclass
 import chromadb
 from sentence_transformers import SentenceTransformer
 
-from retrieval.embed import MODEL_NAME, COLLECTION_NAME
+try:
+    from embed import MODEL_NAME, COLLECTION_NAME
+except ImportError:
+    from retrieval.embed import MODEL_NAME, COLLECTION_NAME
 
 _model: SentenceTransformer | None = None
 
