@@ -15,7 +15,6 @@ __pycache__/
 data/raw_pdfs/*.pdf
 data/processed/*.txt
 data/processed/*_chunks.json
-data/chroma_db/
 data/collection_status.json
 
 # OS/editor cruft

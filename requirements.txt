@@ -4,6 +4,5 @@ pymupdf
 streamlit
 chromadb
 sentence-transformers
-torchvision
 requests
 python-dotenv
