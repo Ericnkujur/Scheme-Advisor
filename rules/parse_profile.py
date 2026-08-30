@@ -25,7 +25,7 @@ except ImportError:
 
 load_dotenv()
 
-MODEL_NAME = "llama-3.3-70b-versatile"
+MODEL_NAME = "openai/gpt-oss-120b"
 GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 
 SYSTEM_PROMPT = """You extract a student's profile from their free-text question, \

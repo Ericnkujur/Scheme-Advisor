@@ -67,12 +67,13 @@ def build_profile_from_sidebar() -> UserProfile:
     )
 
 
-def most_unlocking_missing_field(results: list) -> str | None:
-    """Whichever missing field appears across the most schemes — that's the
-    single question worth asking, since answering it unlocks the most verdicts."""
+def top_missing_fields(results: list, n: int = 2) -> list[str]:
+    """Top N missing fields by how many schemes they'd unlock — asking about
+    more than one per turn means the assistant covers ground faster instead
+    of drip-feeding one question at a time."""
     from collections import Counter
     counts = Counter(f for r in results for f in r.missing_fields)
-    return counts.most_common(1)[0][0] if counts else None
+    return [f for f, _ in counts.most_common(n)]
 
 
 def render_missing_field_widget(field: str, key_prefix: str) -> bool:
@@ -189,7 +190,12 @@ def main():
 
     query = st.chat_input("Ask about scholarships, or answer a follow-up question...")
 
-    if query:
+    
+    if query and (
+        not st.session_state.messages
+        or st.session_state.messages[-1].get("content") != query
+        or st.session_state.messages[-1].get("role") != "user"
+    ):
         st.session_state.messages.append({"role": "user", "content": query})
         with st.chat_message("user"):
             st.markdown(query)
@@ -236,10 +242,9 @@ def main():
             st.markdown(answer)
 
             if chunks and results:
-                field = most_unlocking_missing_field(results)
-                if field:
-                    if render_missing_field_widget(field, key_prefix=f"turn_{len(st.session_state.messages)}"):
-                        st.rerun()
+                fields = top_missing_fields(results, n=2)
+                st.session_state.pending_fields = fields
+                st.session_state.last_query = query
 
                 with st.expander("Raw eligibility verdicts (for debugging)"):
                     for r in results:
@@ -252,7 +257,35 @@ def main():
                         st.divider()
 
         st.session_state.messages.append({"role": "assistant", "content": answer})
+    if st.session_state.get("pending_fields"):
+        with st.container(border=True):
+            st.markdown("**📋 A couple more details could unlock more schemes:**")
+            remaining = st.session_state.pending_fields
+            answered_any = False
+            still_pending = []
+            for field in remaining:
+                if render_missing_field_widget(field, key_prefix=f"pending_{field}"):
+                    answered_any = True
+                else:
+                    still_pending.append(field)
 
+            if answered_any:
+                st.session_state.pending_fields = still_pending
+                requery = st.session_state.last_query
+                st.session_state.messages.append({"role": "user", "content": requery})
+                try:
+                    chunks = retrieve(requery, DB_PATH, top_k=top_k)
+                    seen_slugs = {c.scheme_slug for c in chunks}
+                    results = [
+                        evaluate(rules_by_scheme[slug], st.session_state.profile)
+                        for slug in seen_slugs if slug in rules_by_scheme
+                    ]
+                    answer = generate_answer(requery, chunks, results) if results else "No matching schemes."
+                    st.session_state.pending_fields = top_missing_fields(results, n=2) if results else []
+                except Exception as e:
+                    answer = f"Error: {e}"
+                st.session_state.messages.append({"role": "assistant", "content": answer})
+                st.rerun()
 
 if __name__ == "__main__":
     main()

@@ -54,6 +54,7 @@ class EligibilityResult:
     verdict: Verdict
     conditions: list[ConditionResult] = field(default_factory=list)
     missing_fields: list[str] = field(default_factory=list)
+    required_documents: list[str] = field(default_factory=list)
 
     def summary(self) -> str:
         lines = [f"{self.scheme_name}: {self.verdict.value.upper()}"]
@@ -108,6 +109,21 @@ def _check_category(rule: EligibilityRule, profile: UserProfile) -> ConditionRes
                f"user is {profile.category.value}",
     )
 
+def _check_disability_certificate(rule: EligibilityRule, profile: UserProfile) -> ConditionResult | None:
+    if not rule.requires_disability_certificate:
+        return None
+    if profile.has_disability_certificate is None:
+        return ConditionResult(
+            label="disability_certificate",
+            status=ConditionStatus.MISSING,
+            detail="scheme requires a disability certificate; not confirmed for user",
+        )
+    return ConditionResult(
+        label="disability_certificate",
+        status=ConditionStatus.PASS if profile.has_disability_certificate else ConditionStatus.FAIL,
+        detail="disability certificate required and " +
+               ("available" if profile.has_disability_certificate else "not available"),
+    )
 
 def _check_domicile(rule: EligibilityRule, profile: UserProfile) -> ConditionResult | None:
     if not rule.requires_domicile:
@@ -135,6 +151,7 @@ def evaluate(rule: EligibilityRule, profile: UserProfile) -> EligibilityResult:
                         profile.last_exam_percentage),
         _check_category(rule, profile),
         _check_domicile(rule, profile),
+        _check_disability_certificate(rule, profile),
     ]
     conditions = [c for c in checks if c is not None]
 
@@ -152,6 +169,7 @@ def evaluate(rule: EligibilityRule, profile: UserProfile) -> EligibilityResult:
         verdict=verdict,
         conditions=conditions,
         missing_fields=missing,
+        required_documents=rule.required_documents,
     )
 
 

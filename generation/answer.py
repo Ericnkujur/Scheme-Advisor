@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from retrieval.retrieve import RetrievedChunk
     from rules.evaluator import EligibilityResult
 
-MODEL_NAME = "llama-3.3-70b-versatile"
+MODEL_NAME = "openai/gpt-oss-120b"
 GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 
 SYSTEM_PROMPT = """You are JanSahayak, an assistant that explains Indian government \
@@ -60,6 +60,16 @@ Rules for your response:
 - Keep the tone plain and helpful, not bureaucratic.
 - If multiple schemes are missing different fields, ask about whichever single \
   field would resolve the most schemes at once — not just the first one you notice.
+- For ELIGIBLE (or likely-eligible) schemes, briefly mention the key documents \
+  they'll need to apply, using the required documents list provided.
+- scheme_name must be the FULL, SPECIFIC official title as it appears in the \
+  document — never shorten "Prime Minister's Scholarship Scheme For X" to just \
+  "Prime Minister's Scholarship Scheme". When multiple schemes share a common \
+  prefix, the distinguishing suffix is required.
+- Clearly separate your answer into two parts: first, what you found for THIS \
+  question (eligible/ineligible schemes). Then, as a distinct final paragraph \
+  starting with "Want me to check a few more schemes?", ask the follow-up — \
+  make it feel optional, not required.
 """
 
 
@@ -71,7 +81,7 @@ def _format_chunks(chunks: list["RetrievedChunk"]) -> str:
     parts = []
     for c in chunks:
         parts.append(
-            f"[Source: {c.source_document} | Scheme: {c.scheme_name}]\n{c.text}"
+            f"[Source: {c.source_document} | Scheme: {c.scheme_name}]\n{c.text[:600]}"
         )
     return "\n\n---\n\n".join(parts)
 
@@ -84,6 +94,8 @@ def _format_verdicts(results: list["EligibilityResult"]) -> str:
             lines.append(f"  - {c.label}: {c.status.value} ({c.detail})")
         if r.missing_fields:
             lines.append(f"  Missing info needed: {', '.join(r.missing_fields)}")
+        if r.verdict.value in ("eligible", "needs_info") and r.required_documents:
+            lines.append(f"  Required documents to apply: {', '.join(r.required_documents)}")
         parts.append("\n".join(lines))
     return "\n\n".join(parts)
 
