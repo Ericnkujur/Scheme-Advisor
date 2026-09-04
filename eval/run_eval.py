@@ -124,7 +124,7 @@ def run(with_generation: bool = False, top_k: int = 5):
             print(f"notes: {q.get('notes', '')}")
             print(answer)
 
-            verdict = judge_faithfulness(answer, chunks)
+            verdict = judge_faithfulness(answer, chunks, eligibility_results=results)
             faithfulness_scores.append((q["id"], verdict))
             print(f"\n  [Faithfulness judge] faithful={verdict['faithful']} — {verdict['reasoning']}")
             if verdict.get("unsupported_claims"):
