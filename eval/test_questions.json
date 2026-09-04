@@ -1,0 +1,90 @@
+[
+  {
+    "id": "q1_sc_income_eligible",
+    "query": "I'm an SC student, income 2 lakh, want to pursue undergrad studies",
+    "profile": {"category": "SC", "annual_family_income": 200000},
+    "expected_relevant_slugs": [
+      "Central_Sector_Scholarship_Of_Top_Class_Education_For_Sc_Students"
+    ],
+    "expected_verdicts": {
+      "Central_Sector_Scholarship_Of_Top_Class_Education_For_Sc_Students": "eligible"
+    },
+    "notes": "Category + income both satisfied — should be a clean ELIGIBLE."
+  },
+  {
+    "id": "q2_st_only_scheme_category_mismatch",
+    "query": "I'm a general category student, is there any ST-specific scholarship for me?",
+    "profile": {"category": "General"},
+    "expected_relevant_slugs": [
+      "National_Fellowship_And_Scholarship_For_Higher_Education_Of_St_Students_Scholars"
+    ],
+    "expected_verdicts": {
+      "National_Fellowship_And_Scholarship_For_Higher_Education_Of_St_Students_Scholars": "ineligible"
+    },
+    "notes": "Category is a hard blocker (ST-only scheme, user is General) — must stay INELIGIBLE even with income/domicile unknown."
+  },
+  {
+    "id": "q3_income_over_limit_ineligible",
+    "query": "I'm ST category, my family income is 7 lakhs, do I qualify for anything?",
+    "profile": {"category": "ST", "annual_family_income": 700000},
+    "expected_relevant_slugs": [
+      "National_Fellowship_And_Scholarship_For_Higher_Education_Of_St_Students_Scholars"
+    ],
+    "expected_verdicts": {
+      "National_Fellowship_And_Scholarship_For_Higher_Education_Of_St_Students_Scholars": "ineligible"
+    },
+    "notes": "Income (7L) exceeds the scheme's 6L ceiling — INELIGIBLE on income alone."
+  },
+  {
+    "id": "q4_disability_certificate_needs_info",
+    "query": "I'm a general category student wanting to pursue a master's, what disability scholarships might apply to me?",
+    "profile": {"category": "General", "education_level": "Postgraduate"},
+    "expected_relevant_slugs": [
+      "Post_Matric_Scholarship_For_Students_With_Disabilities",
+      "Pre_Matric_Scholarship_For_Students_With_Disabilities",
+      "Scholarship_For_Top_Class_Education_For_Students_With_Disabilities"
+    ],
+    "expected_verdicts": {
+      "Post_Matric_Scholarship_For_Students_With_Disabilities": "needs_info",
+      "Pre_Matric_Scholarship_For_Students_With_Disabilities": "needs_info",
+      "Scholarship_For_Top_Class_Education_For_Students_With_Disabilities": "needs_info"
+    },
+    "notes": "Disability certificate + income unknown — must be NEEDS_INFO (this caught the missing disability-check bug earlier)."
+  },
+  {
+    "id": "q5_out_of_scope_study_abroad",
+    "query": "What scholarships are available for studying abroad?",
+    "profile": {},
+    "expected_relevant_slugs": [],
+    "expected_verdicts": {},
+    "notes": "No scheme in this dataset is abroad-specific. Answer should say so plainly. Retrieval/faithfulness test, not an eligibility test."
+  },
+  {
+    "id": "q6_documents_question",
+    "query": "What documents do I need for the Prime Minister's Scholarship Scheme for Ministry of Railways?",
+    "profile": {},
+    "expected_relevant_slugs": [
+      "Prime_Minister_s_Scholarship_Scheme_For_Ministry_Of_Railways"
+    ],
+    "expected_verdicts": {
+      "Prime_Minister_s_Scholarship_Scheme_For_Ministry_Of_Railways": "needs_info"
+    },
+    "notes": "Percentage not given, so NEEDS_INFO — answer should still list required_documents from the rule."
+  },
+  {
+    "id": "q7_faithfulness_no_fabricated_criteria",
+    "query": "I have no disability, family income 6 lakh, general category, what disability scholarships can I get?",
+    "profile": {"category": "General", "annual_family_income": 600000, "has_disability_certificate": false},
+    "expected_relevant_slugs": [
+      "Post_Matric_Scholarship_For_Students_With_Disabilities",
+      "Pre_Matric_Scholarship_For_Students_With_Disabilities",
+      "Scholarship_For_Top_Class_Education_For_Students_With_Disabilities"
+    ],
+    "expected_verdicts": {
+      "Post_Matric_Scholarship_For_Students_With_Disabilities": "ineligible",
+      "Pre_Matric_Scholarship_For_Students_With_Disabilities": "ineligible",
+      "Scholarship_For_Top_Class_Education_For_Students_With_Disabilities": "ineligible"
+    },
+    "notes": "FAITHFULNESS CHECK: the answer must NOT state a specific disability percentage (e.g. '40%') — schema.py's requires_disability_certificate is a boolean only, no percentage field exists. A stated percentage is a hallucination found during manual testing on 2026-08-12. All three are INELIGIBLE here: Post/Pre-Matric fail on income (2.5L ceiling, user has 6L) AND disability cert; Top Class passes income (8L ceiling) but explicitly fails on disability cert since the user stated they have none (has_disability_certificate=false is a FAIL condition, not a MISSING one)."
+  }
+]
